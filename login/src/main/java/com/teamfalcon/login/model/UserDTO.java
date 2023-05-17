@@ -1,9 +1,16 @@
 package com.teamfalcon.login.model;
 
 public interface UserDTO {
-    int getId();
+
+    Integer getId();
     String getUsername();
     String getPasswordHash();
-    int getFailedLoginAttempts();
+    Integer getFailedLoginAttempts();
     Boolean getIsDeleted();
+
+    void setId(Integer id);
+    void setUsername(String username);
+    void setPasswordHash(String passwordHash);
+    void setFailedLoginAttempts(Integer failedLoginAttempts);
+    void setIsDeleted(Boolean isDeleted);
 }

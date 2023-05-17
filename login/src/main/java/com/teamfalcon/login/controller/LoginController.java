@@ -1,10 +1,8 @@
 package com.teamfalcon.login.controller;
 
-import com.teamfalcon.login.exceptions.IncorrectPasswordException;
 import com.teamfalcon.login.model.LoginRequestBodyDTO;
 import com.teamfalcon.login.model.LoginResponseDTO;
 import com.teamfalcon.login.service.LoginService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
