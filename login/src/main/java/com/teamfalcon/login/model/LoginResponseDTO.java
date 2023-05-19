@@ -10,6 +10,5 @@ public class LoginResponseDTO {
     @NonNull
     private Boolean success;
     private String token;
-    @NonNull
     private String message;
 }

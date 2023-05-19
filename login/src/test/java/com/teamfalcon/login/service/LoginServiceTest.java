@@ -4,69 +4,91 @@ package com.teamfalcon.login.service;
 import com.teamfalcon.login.exceptions.FailedLoginLimitExceededException;
 import com.teamfalcon.login.exceptions.IncorrectPasswordException;
 import com.teamfalcon.login.model.LoginRequestBodyDTO;
-import com.teamfalcon.login.model.UserDTO;
+import com.teamfalcon.login.model.LoginResponseDTO;
+import com.teamfalcon.login.model.UserEntity;
+import com.teamfalcon.login.model.TokenEntity;
 import com.teamfalcon.login.persistence.UserRepository;
+import com.teamfalcon.login.persistence.UserTokenRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.projection.ProjectionFactory;
-import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
+
+import static com.teamfalcon.login.testmodels.TestUserEntityFactory.*;
+import static com.teamfalcon.login.utils.ExpiryDateGeneration.generateExpiryDate;
+import static com.teamfalcon.login.utils.TokenGeneration.generateToken;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class LoginServiceTest {
     @InjectMocks
-    private static LoginServiceImpl loginService;
+    private LoginServiceImpl loginService;
 
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private UserTokenRepository userTokenRepository;
+
+
 
 
     @Test
-    public void IsDeletedThrowsEntityNotFoundExceptionTest() {
-        ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
-        UserDTO deletedUser = makeDeletedUser(factory);
+    public void isDeletedThrowsEntityNotFoundExceptionTest() {
+
+        UserEntity deletedUser = makeDeletedUser();
         LoginRequestBodyDTO loginRequestBodyDTO = makeValidLoginRequestBodyDTO();
 
-        when(userRepository.findLoginDTOByUsername(any(String.class))).thenReturn(deletedUser);
+
+        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(deletedUser));
 
         assertThrows(EntityNotFoundException.class, () -> {
             loginService.authoriseLogin(loginRequestBodyDTO);
         });
 
-        Mockito.reset(userRepository);
+
     }
 
     @Test
-    public void IncorrectPasswordHashThrowsIncorrectPasswordHashExceptionTest() {
-        ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
-        UserDTO validUser = makeValidUser(factory);
-        LoginRequestBodyDTO loginRequestBodyDTO = makeInvalidLoginRequestBodyDTO();
+    public void invalidUsernameThrowsNoEntityFoundExceptionTest() {
 
-        when(userRepository.findLoginDTOByUsername(any(String.class))).thenReturn(validUser);
+        LoginRequestBodyDTO loginRequestBodyDTO = makeInvalidUsernameLoginRequestBodyDTO();
+
+        assertThrows(EntityNotFoundException.class, () -> {
+            loginService.authoriseLogin(loginRequestBodyDTO);
+        });
+    }
+
+    @Test
+    public void incorrectPasswordHashThrowsIncorrectPasswordHashExceptionTest() {
+
+        UserEntity validUser = makeValidUser();
+        LoginRequestBodyDTO loginRequestBodyDTO = makeInvalidPasswordLoginRequestBodyDTO();
+
+        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(validUser));
 
         assertThrows(IncorrectPasswordException.class, () -> {
             loginService.authoriseLogin(loginRequestBodyDTO);
         });
 
-        Mockito.reset(userRepository);
+
     }
 
     @Test
-    public void IncorrectPasswordHashIncrementsFailedLoginAttemptTest() {
-        ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
-        UserDTO validUser = makeValidUser(factory);
-        LoginRequestBodyDTO loginRequestBodyDTO = makeInvalidLoginRequestBodyDTO();
+    public void incorrectPasswordHashIncrementsFailedLoginAttemptTest() {
 
-        when(userRepository.findLoginDTOByUsername(any(String.class))).thenReturn(validUser);
+        UserEntity validUser = makeValidUser();
+        LoginRequestBodyDTO loginRequestBodyDTO = makeInvalidPasswordLoginRequestBodyDTO();
+
+        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(validUser));
         doNothing().when(userRepository).updateFailedLoginAttempts(any(String.class), any(int.class));
 
         assertThrows(IncorrectPasswordException.class, () -> {
@@ -77,73 +99,93 @@ public class LoginServiceTest {
                 loginRequestBodyDTO.getUsername(),
                 (validUser.getFailedLoginAttempts() + 1));
 
-        Mockito.reset(userRepository);
+
     }
 
     @Test
-    public void FailedLoginAttemptsExceedsLimitThrowsFailedLoginAttemptsExceptionTest() {
-        ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
-        UserDTO invalidUserTooManyFailedLoginAttempts = makeInvalidUser(factory);
+    public void failedLoginAttemptsExceedsLimitThrowsFailedLoginAttemptsExceptionTest() {
+
+        UserEntity invalidUserTooManyFailedLoginAttempts = makeInvalidUser();
         LoginRequestBodyDTO loginRequestBodyDTO = makeValidLoginRequestBodyDTO();
 
-        System.out.println(invalidUserTooManyFailedLoginAttempts);
-        when(userRepository.findLoginDTOByUsername(
+        when(userRepository.findByUsername(
                 any(String.class)))
-                .thenReturn(invalidUserTooManyFailedLoginAttempts);
+                .thenReturn(Optional.of(invalidUserTooManyFailedLoginAttempts));
 
         assertThrows(FailedLoginLimitExceededException.class, () -> {
             loginService.authoriseLogin(loginRequestBodyDTO);
         });
-
-        Mockito.reset(userRepository);
     }
 
+    @Test
+    public void createNewTokenAsEmptyUserTokenDTOReturnedFromRepoTest() {
 
-    private UserDTO makeValidUser(ProjectionFactory factory) {
-        UserDTO userDTOProjection = factory.createProjection(UserDTO.class);
-        userDTOProjection.setId(1);
-        userDTOProjection.setUsername("will123");
-        userDTOProjection.setPasswordHash("b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86");
-        userDTOProjection.setFailedLoginAttempts(0);
-        userDTOProjection.setIsDeleted(false);
-        return userDTOProjection;
+        UserEntity validUser = makeValidUser();
+        LoginRequestBodyDTO loginRequestBodyDTO = makeValidLoginRequestBodyDTO();
+
+        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(validUser));
+        when(userTokenRepository.findByUserId(any(Integer.class))).thenReturn(Optional.empty());
+        when(userTokenRepository.save(any(TokenEntity.class))).thenReturn(any(TokenEntity.class));
+
+        LoginResponseDTO actualResponse = loginService.authoriseLogin(loginRequestBodyDTO);
+        Boolean expectedSuccess = true;
+
+        assertEquals(expectedSuccess, actualResponse.getSuccess());
+        assertNotNull(actualResponse.getToken());
+        assertNull(actualResponse.getMessage());
     }
 
-    private UserDTO makeInvalidUser(ProjectionFactory factory) {
-        UserDTO userDTOProjection = factory.createProjection(UserDTO.class);
-        userDTOProjection.setId(1);
-        userDTOProjection.setUsername("will123");
-        userDTOProjection.setPasswordHash("b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86");
-        userDTOProjection.setFailedLoginAttempts(5);
-        userDTOProjection.setIsDeleted(false);
-        return userDTOProjection;
-    }
+    @Test
+    public void updateExistingTokenDTOReturnedFromRepoTest() {
 
-    private UserDTO makeDeletedUser(ProjectionFactory factory) {
-        UserDTO userDTOProjection = factory.createProjection(UserDTO.class);
-        userDTOProjection.setId(1);
-        userDTOProjection.setUsername("will123");
-        userDTOProjection.setPasswordHash("b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86");
-        userDTOProjection.setFailedLoginAttempts(0);
-        userDTOProjection.setIsDeleted(true);
-        return userDTOProjection;
-    }
+        UserEntity validUser = makeValidUser();
+        LoginRequestBodyDTO loginRequestBodyDTO = makeValidLoginRequestBodyDTO();
 
-    private LoginRequestBodyDTO makeValidLoginRequestBodyDTO() {
-        return LoginRequestBodyDTO
-                .builder()
-                .username("will123")
-                .passwordHash("b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86")
+        TokenEntity returnedUserToken = TokenEntity.builder()
+                .id(1)
+                .userId(1)
+                .token(UUID.randomUUID().toString())
+                .expiryDate(LocalDateTime.now().minusHours(6))
                 .build();
 
+        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(validUser));
+        when(userTokenRepository.findByUserId(any(Integer.class))).thenReturn(Optional.of(returnedUserToken));
+        when(userTokenRepository.save(any(TokenEntity.class))).thenReturn(any(TokenEntity.class));
+
+        LoginResponseDTO actualResponse = loginService.authoriseLogin(loginRequestBodyDTO);
+        Boolean expectedSuccess = true;
+
+        assertNotEquals(returnedUserToken.getToken(), actualResponse.getToken());
+        assertEquals(expectedSuccess, actualResponse.getSuccess());
+        assertNotNull(actualResponse.getToken());
+        assertNull(actualResponse.getMessage());
     }
 
-    private LoginRequestBodyDTO makeInvalidLoginRequestBodyDTO() {
-        return LoginRequestBodyDTO
-                .builder()
-                .username("will123")
-                .passwordHash("123")
+    @Test
+    public void useValidUserTokenDTOReturnedFromRepoTest() {
+
+        UserEntity validUser = makeValidUser();
+        LoginRequestBodyDTO loginRequestBodyDTO = makeValidLoginRequestBodyDTO();
+
+        TokenEntity returnedUserToken = TokenEntity.builder()
+                .id(1)
+                .userId(1)
+                .token(generateToken())
+                .expiryDate(generateExpiryDate())
                 .build();
 
+        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(validUser));
+        when(userTokenRepository.findByUserId(any(Integer.class))).thenReturn(Optional.of(returnedUserToken));
+
+
+        LoginResponseDTO actualResponse = loginService.authoriseLogin(loginRequestBodyDTO);
+        Boolean expectedSuccess = true;
+
+        assertNotNull(actualResponse.getToken());
+        assertEquals(returnedUserToken.getToken(), actualResponse.getToken());
+        assertEquals(expectedSuccess, actualResponse.getSuccess());
+        assertNull(actualResponse.getMessage());
     }
+
+
 }
