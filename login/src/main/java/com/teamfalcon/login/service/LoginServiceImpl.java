@@ -22,10 +22,8 @@ import static com.teamfalcon.login.utils.TokenGeneration.generateToken;
 @AllArgsConstructor
 public class LoginServiceImpl implements LoginService {
 
-
     private final UserTokenRepository userTokenRepository;
     private final UserRepository userRepository;
-
 
     private static final int MAX_LOGIN_ATTEMPTS = 5;
     private static final int INCREMENTAL_AMOUNT = 1;

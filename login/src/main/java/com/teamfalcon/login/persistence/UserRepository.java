@@ -1,6 +1,7 @@
 package com.teamfalcon.login.persistence;
 
 import com.teamfalcon.login.model.UserEntity;
+import com.teamfalcon.login.utils.ParameterNames;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -11,12 +12,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+import static com.teamfalcon.login.utils.ParameterNames.NEW_ATTEMPT;
+import static com.teamfalcon.login.utils.ParameterNames.USERNAME;
+
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Integer> {
-    Optional<UserEntity> findByUsername(@Param("username") String username);
+
+    Optional<UserEntity> findByUsername(@Param(USERNAME) String username);
 
     @Transactional
     @Modifying
     @Query("UPDATE UserEntity u SET u.failedLoginAttempts = :newAttempt WHERE u.username = :username")
-    void updateFailedLoginAttempts(@Param("username") String username, @Param("newAttempt") int newAttempt);
+    void updateFailedLoginAttempts(@Param(USERNAME) String username, @Param(NEW_ATTEMPT) int newAttempt);
+
+
 }

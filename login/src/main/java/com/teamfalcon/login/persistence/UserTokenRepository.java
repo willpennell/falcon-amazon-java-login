@@ -6,7 +6,8 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface UserTokenRepository extends JpaRepository<TokenEntity, Integer> {
+import static com.teamfalcon.login.utils.ParameterNames.USER_ID;
 
-    Optional<TokenEntity> findByUserId(@Param("user_id") Integer userId);
+public interface UserTokenRepository extends JpaRepository<TokenEntity, Integer> {
+    Optional<TokenEntity> findByUserId(@Param(USER_ID) Integer userId);
 }

@@ -42,7 +42,7 @@ public class LoginServiceTest {
 
 
     @Test
-    public void isDeletedThrowsEntityNotFoundExceptionTest() {
+    public void shouldThrowEntityNotFoundExceptionTest() {
 
         UserEntity deletedUser = makeDeletedUser();
         LoginRequestBodyDTO loginRequestBodyDTO = makeValidLoginRequestBodyDTO();
@@ -58,7 +58,7 @@ public class LoginServiceTest {
     }
 
     @Test
-    public void invalidUsernameThrowsNoEntityFoundExceptionTest() {
+    public void shouldThrowNoEntityFoundExceptionTest() {
 
         LoginRequestBodyDTO loginRequestBodyDTO = makeInvalidUsernameLoginRequestBodyDTO();
 
@@ -68,7 +68,7 @@ public class LoginServiceTest {
     }
 
     @Test
-    public void incorrectPasswordHashThrowsIncorrectPasswordHashExceptionTest() {
+    public void shouldThrowIncorrectPasswordHashExceptionTest() {
 
         UserEntity validUser = makeValidUser();
         LoginRequestBodyDTO loginRequestBodyDTO = makeInvalidPasswordLoginRequestBodyDTO();
@@ -83,7 +83,7 @@ public class LoginServiceTest {
     }
 
     @Test
-    public void incorrectPasswordHashIncrementsFailedLoginAttemptTest() {
+    public void shouldIncrementFailedLoginAttemptTest() {
 
         UserEntity validUser = makeValidUser();
         LoginRequestBodyDTO loginRequestBodyDTO = makeInvalidPasswordLoginRequestBodyDTO();
@@ -103,7 +103,7 @@ public class LoginServiceTest {
     }
 
     @Test
-    public void failedLoginAttemptsExceedsLimitThrowsFailedLoginAttemptsExceptionTest() {
+    public void shouldThrowFailedLoginAttemptsExceptionTest() {
 
         UserEntity invalidUserTooManyFailedLoginAttempts = makeInvalidUser();
         LoginRequestBodyDTO loginRequestBodyDTO = makeValidLoginRequestBodyDTO();
