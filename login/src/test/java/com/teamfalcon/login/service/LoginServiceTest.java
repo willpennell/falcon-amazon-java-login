@@ -5,8 +5,8 @@ import com.teamfalcon.login.exceptions.FailedLoginLimitExceededException;
 import com.teamfalcon.login.exceptions.IncorrectPasswordException;
 import com.teamfalcon.login.model.LoginRequestBodyDTO;
 import com.teamfalcon.login.model.LoginResponseDTO;
-import com.teamfalcon.login.model.UserEntity;
 import com.teamfalcon.login.model.TokenEntity;
+import com.teamfalcon.login.model.UserEntity;
 import com.teamfalcon.login.persistence.UserRepository;
 import com.teamfalcon.login.persistence.UserTokenRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,10 +20,21 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.teamfalcon.login.testmodels.TestUserEntityFactory.*;
+
+import static com.teamfalcon.login.fixtures.UserEntityFixture.makeDeletedUser;
+import static com.teamfalcon.login.fixtures.UserEntityFixture.makeInvalidPasswordLoginRequestBodyDTO;
+import static com.teamfalcon.login.fixtures.UserEntityFixture.makeInvalidUser;
+import static com.teamfalcon.login.fixtures.UserEntityFixture.makeInvalidUsernameLoginRequestBodyDTO;
+import static com.teamfalcon.login.fixtures.UserEntityFixture.makeValidLoginRequestBodyDTO;
+import static com.teamfalcon.login.fixtures.UserEntityFixture.makeValidUser;
 import static com.teamfalcon.login.utils.ExpiryDateGeneration.generateExpiryDate;
-import static com.teamfalcon.login.utils.TokenGeneration.generateToken;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -37,8 +48,6 @@ public class LoginServiceTest {
 
     @Mock
     private UserTokenRepository userTokenRepository;
-
-
 
 
     @Test
@@ -128,9 +137,9 @@ public class LoginServiceTest {
         when(userTokenRepository.save(any(TokenEntity.class))).thenReturn(any(TokenEntity.class));
 
         LoginResponseDTO actualResponse = loginService.authoriseLogin(loginRequestBodyDTO);
-        Boolean expectedSuccess = true;
 
-        assertEquals(expectedSuccess, actualResponse.getSuccess());
+
+        assertTrue(actualResponse.getSuccess());
         assertNotNull(actualResponse.getToken());
         assertNull(actualResponse.getMessage());
     }
@@ -153,10 +162,10 @@ public class LoginServiceTest {
         when(userTokenRepository.save(any(TokenEntity.class))).thenReturn(any(TokenEntity.class));
 
         LoginResponseDTO actualResponse = loginService.authoriseLogin(loginRequestBodyDTO);
-        Boolean expectedSuccess = true;
+
 
         assertNotEquals(returnedUserToken.getToken(), actualResponse.getToken());
-        assertEquals(expectedSuccess, actualResponse.getSuccess());
+        assertTrue(actualResponse.getSuccess());
         assertNotNull(actualResponse.getToken());
         assertNull(actualResponse.getMessage());
     }
@@ -166,11 +175,12 @@ public class LoginServiceTest {
 
         UserEntity validUser = makeValidUser();
         LoginRequestBodyDTO loginRequestBodyDTO = makeValidLoginRequestBodyDTO();
+        String testToken = "e2fb569d-9403-47bf-85e8-d4696e0aefc1";
 
         TokenEntity returnedUserToken = TokenEntity.builder()
                 .id(1)
                 .userId(1)
-                .token(generateToken())
+                .token(testToken)
                 .expiryDate(generateExpiryDate())
                 .build();
 
@@ -179,11 +189,11 @@ public class LoginServiceTest {
 
 
         LoginResponseDTO actualResponse = loginService.authoriseLogin(loginRequestBodyDTO);
-        Boolean expectedSuccess = true;
+
 
         assertNotNull(actualResponse.getToken());
-        assertEquals(returnedUserToken.getToken(), actualResponse.getToken());
-        assertEquals(expectedSuccess, actualResponse.getSuccess());
+        assertEquals(testToken, actualResponse.getToken());
+        assertTrue(actualResponse.getSuccess());
         assertNull(actualResponse.getMessage());
     }
 

@@ -11,7 +11,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.util.Optional;
 
-import static com.teamfalcon.login.testmodels.TestUserEntityFactory.*;
+import static com.teamfalcon.login.fixtures.UserEntityFixture.*;
 import static com.teamfalcon.login.utils.ExpiryDateGeneration.generateExpiryDate;
 import static com.teamfalcon.login.utils.TokenGeneration.generateToken;
 import static org.junit.jupiter.api.Assertions.*;

@@ -1,8 +1,8 @@
 package com.teamfalcon.login.exceptions;
 
 public class IncorrectPasswordException extends RuntimeException {
-
-    public IncorrectPasswordException(String message) {
-        super(message);
+    private static final String INCORRECT_PASSWORD_MESSAGE = "Error 401 Unauthorised: Incorrect Credentials";
+    public IncorrectPasswordException() {
+        super(INCORRECT_PASSWORD_MESSAGE);
     }
 }

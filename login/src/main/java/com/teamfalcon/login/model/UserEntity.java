@@ -1,5 +1,6 @@
 package com.teamfalcon.login.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,6 +25,7 @@ public class UserEntity {
     private String username;
     private String passwordHash;
     private Integer failedLoginAttempts;
-    private Boolean isDeleted;
+    @Column(name = "is_deleted")
+    private Boolean deleted;
 
 }

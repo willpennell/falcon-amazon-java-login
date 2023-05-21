@@ -1,36 +1,36 @@
-package com.teamfalcon.login.testmodels;
+package com.teamfalcon.login.fixtures;
 
 import com.teamfalcon.login.model.LoginRequestBodyDTO;
 import com.teamfalcon.login.model.UserEntity;
 
-public class TestUserEntityFactory {
+public class UserEntityFixture {
 
     public static UserEntity makeValidUser() {
         return UserEntity.builder()
-                .id(1)
+                .id(25)
                 .username("johndoe@example.com")
                 .passwordHash("h7B3q9fX8eR2dP5s")
                 .failedLoginAttempts(0)
-                .isDeleted(Boolean.FALSE).build();
+                .deleted(Boolean.FALSE).build();
 
     }
 
     public static UserEntity makeInvalidUser() {
         return UserEntity.builder()
-                .id(1)
+                .id(25)
                 .username("johndoe@example.com")
                 .passwordHash("h7B3q9fX8eR2dP5s")
                 .failedLoginAttempts(6)
-                .isDeleted(Boolean.FALSE).build();
+                .deleted(Boolean.FALSE).build();
     }
 
     public static UserEntity makeDeletedUser() {
         return UserEntity.builder()
-                .id(1)
+                .id(25)
                 .username("johndoe@example.com")
                 .passwordHash("h7B3q9fX8eR2dP5s")
                 .failedLoginAttempts(0)
-                .isDeleted(Boolean.TRUE).build();
+                .deleted(Boolean.TRUE).build();
     }
 
     public static LoginRequestBodyDTO makeValidLoginRequestBodyDTO() {

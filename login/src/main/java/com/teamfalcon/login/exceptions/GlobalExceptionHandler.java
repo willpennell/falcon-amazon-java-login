@@ -8,16 +8,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import static com.teamfalcon.login.exceptions.ExceptionMessages.*;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+    private static final int UNAUTHORISED_STATUS_CODE = 401;
+    private static final int FORBIDDEN_STATUS_CODE = 403;
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<LoginResponseDTO> handleEntityNotFoundException(
             EntityNotFoundException ex) {
         return new ResponseEntity<>(
-                loginRequestBodyDTOSetUp(USER_NOT_FOUND_MESSAGE),
+                loginRequestBodyDTOSetUp(ex.getMessage()),
                 HttpStatus.NOT_FOUND);
     }
 
@@ -25,7 +26,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<LoginResponseDTO> handleIncorrectPasswordException(
             IncorrectPasswordException ex) {
         return new ResponseEntity<>(
-                loginRequestBodyDTOSetUp(INCORRECT_PASSWORD_MESSAGE),
+                loginRequestBodyDTOSetUp(ex.getMessage()),
                 HttpStatus.valueOf(UNAUTHORISED_STATUS_CODE));
     }
 
@@ -33,7 +34,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<LoginResponseDTO> handleFailedLoginAttemptsExceededException(
             FailedLoginLimitExceededException ex) {
         return new ResponseEntity<>(
-                loginRequestBodyDTOSetUp(FAILED_LOGIN_ATTEMPTS_EXCEEDED_MESSAGE),
+                loginRequestBodyDTOSetUp(ex.getMessage()),
                 HttpStatusCode.valueOf(FORBIDDEN_STATUS_CODE));
     }
 
