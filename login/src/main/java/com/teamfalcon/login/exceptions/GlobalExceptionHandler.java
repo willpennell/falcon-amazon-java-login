@@ -18,7 +18,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<LoginResponseDTO> handleEntityNotFoundException(
             EntityNotFoundException ex) {
         return new ResponseEntity<>(
-                loginRequestBodyDTOSetUp(ex.getMessage()),
+                loginResponseBodyDTOSetUp(ex.getMessage()),
                 HttpStatus.NOT_FOUND);
     }
 
@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<LoginResponseDTO> handleIncorrectPasswordException(
             IncorrectPasswordException ex) {
         return new ResponseEntity<>(
-                loginRequestBodyDTOSetUp(ex.getMessage()),
+                loginResponseBodyDTOSetUp(ex.getMessage()),
                 HttpStatus.valueOf(UNAUTHORISED_STATUS_CODE));
     }
 
@@ -34,11 +34,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<LoginResponseDTO> handleFailedLoginAttemptsExceededException(
             FailedLoginLimitExceededException ex) {
         return new ResponseEntity<>(
-                loginRequestBodyDTOSetUp(ex.getMessage()),
+                loginResponseBodyDTOSetUp(ex.getMessage()),
                 HttpStatusCode.valueOf(FORBIDDEN_STATUS_CODE));
     }
 
-    private LoginResponseDTO loginRequestBodyDTOSetUp(String message) {
+    private LoginResponseDTO loginResponseBodyDTOSetUp(String message) {
         LoginResponseDTO loginResponseDTO = new LoginResponseDTO();
         loginResponseDTO.setSuccess(false);
         loginResponseDTO.setToken(null);

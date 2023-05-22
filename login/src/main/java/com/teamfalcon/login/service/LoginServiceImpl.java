@@ -36,7 +36,7 @@ public class LoginServiceImpl implements LoginService {
         validateLoginRequestUsername(loginRequestBodyDTO);
 
         UserEntity userEntity = userRepository.findByUsername(loginRequestBodyDTO.getUsername())
-                .orElseThrow(() -> new EntityNotFoundException(String.format(ENTITY_NOT_FOUND_ERROR_MESSAGE + "\n" +
+                .orElseThrow(() -> new EntityNotFoundException(String.format(USER_NOT_FOUND_MESSAGE + " " +
                         UserEntity.class)));
 
 
@@ -66,7 +66,7 @@ public class LoginServiceImpl implements LoginService {
             throw new EntityNotFoundException(String.format(USER_NOT_FOUND_MESSAGE + "\n" +
                     UserEntity.class));
         }
-        if (userEntity.getFailedLoginAttempts() > MAX_LOGIN_ATTEMPTS) {
+        if (userEntity.getFailedLoginAttempts() >= MAX_LOGIN_ATTEMPTS) {
             throw new FailedLoginLimitExceededException();
         }
         if (!loginRequestBodyDTO.getPasswordHash().equals(userEntity.getPasswordHash())) {
