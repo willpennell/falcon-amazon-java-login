@@ -28,7 +28,6 @@ public class LoginServiceImpl implements LoginService {
 
     private static final int MAX_LOGIN_ATTEMPTS = 5;
     private static final int INCREMENTAL_AMOUNT = 1;
-    public static final String ENTITY_NOT_FOUND_ERROR_MESSAGE = "Entity Not Found";
     private static final String USER_NOT_FOUND_MESSAGE = "Error 404 Not Found: No user found";
 
     @Override
