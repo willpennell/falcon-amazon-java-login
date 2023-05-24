@@ -98,15 +98,13 @@ public class LoginServiceTest {
         LoginRequestBodyDTO loginRequestBodyDTO = makeInvalidPasswordLoginRequestBodyDTO();
 
         when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(validUser));
-        doNothing().when(userRepository).updateFailedLoginAttempts(any(String.class), any(int.class));
+        when(userRepository.save(any(UserEntity.class))).thenReturn(validUser);
 
         assertThrows(IncorrectPasswordException.class, () -> {
             loginService.authoriseLogin(loginRequestBodyDTO);
         });
 
-        verify(userRepository, times(1)).updateFailedLoginAttempts(
-                loginRequestBodyDTO.getUsername(),
-                (validUser.getFailedLoginAttempts() + 1));
+        verify(userRepository, times(1)).save(validUser);
 
 
     }

@@ -1,31 +1,28 @@
 package com.teamfalcon.login.persistence;
 
-import com.teamfalcon.login.model.UserEntity;
 import com.teamfalcon.login.model.TokenEntity;
-import jakarta.transaction.Transactional;
+import com.teamfalcon.login.model.UserEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.Optional;
 
-import static com.teamfalcon.login.fixtures.UserEntityFixture.*;
+import static com.teamfalcon.login.fixtures.UserEntityFixture.makeValidUser;
 import static com.teamfalcon.login.utils.ExpiryDateGeneration.generateExpiryDate;
 import static com.teamfalcon.login.utils.TokenGeneration.generateToken;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @TestPropertySource(locations = "classpath:application-test.properties")
-@Transactional
-public class UserTokenRepositoryIntegrationTest {
+public class UserTokenRepositoryTest {
 
     private final UserTokenRepository userTokenRepository;
 
     @Autowired
-    public UserTokenRepositoryIntegrationTest(UserTokenRepository userTokenRepository) {
+    public UserTokenRepositoryTest(UserTokenRepository userTokenRepository) {
         this.userTokenRepository = userTokenRepository;
     }
 

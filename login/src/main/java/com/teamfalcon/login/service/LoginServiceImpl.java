@@ -77,9 +77,8 @@ public class LoginServiceImpl implements LoginService {
     }
     private void incrementFailedLoginAttempts(UserEntity userEntity) {
         int currentAttempts = userEntity.getFailedLoginAttempts();
-        userRepository.updateFailedLoginAttempts(
-                userEntity.getUsername(),
-                currentAttempts + INCREMENTAL_AMOUNT);
+        userEntity.setFailedLoginAttempts(currentAttempts + INCREMENTAL_AMOUNT);
+        userRepository.save(userEntity);
     }
 
     private LoginResponseDTO getLoginResponseDTO(TokenEntity newTokenEntity) {
