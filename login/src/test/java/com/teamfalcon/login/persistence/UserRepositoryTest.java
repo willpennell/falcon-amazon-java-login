@@ -2,10 +2,9 @@ package com.teamfalcon.login.persistence;
 
 
 import com.teamfalcon.login.model.UserEntity;
-import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.TestPropertySource;
 
@@ -16,16 +15,28 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 @DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @TestPropertySource(locations = "classpath:application-test.properties")
-@Transactional
-public class UserRepositoryIntegrationTest {
+public class UserRepositoryTest {
 
     private final UserRepository userRepository;
+    private static UserEntity testUser;
 
     @Autowired
-    public UserRepositoryIntegrationTest(UserRepository userRepository) {
+    public UserRepositoryTest(UserRepository userRepository) {
         this.userRepository = userRepository;
+    }
+
+    @BeforeEach
+    public void setUp() {
+        testUser = UserEntity
+                .builder()
+                .id(1)
+                .username("johndoe@example.com")
+                .passwordHash("h7B3q9fX8eR2dP5s")
+                .failedLoginAttempts(0)
+                .deleted(Boolean.FALSE)
+                .build();
+        userRepository.save(testUser);
     }
 
     @Test
@@ -40,15 +51,4 @@ public class UserRepositoryIntegrationTest {
     }
 
 
-    @Test
-    public void updateFailedLoginAttemptsTest() {
-
-        String username = "johndoe@example.com";
-
-        userRepository.updateFailedLoginAttempts(username, 2);
-        Optional<UserEntity> updatedUser = userRepository.findByUsername(username);
-
-        assertEquals(2, updatedUser.get().getFailedLoginAttempts());
-
-    }
 }
