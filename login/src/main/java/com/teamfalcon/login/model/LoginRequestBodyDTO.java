@@ -14,7 +14,7 @@ public class LoginRequestBodyDTO {
     @NonNull
     private String username;
     @NonNull
-    private String passwordHash;
+    private String password;
 }
 
 
