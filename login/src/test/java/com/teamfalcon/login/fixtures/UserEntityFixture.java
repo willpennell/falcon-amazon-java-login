@@ -2,14 +2,28 @@ package com.teamfalcon.login.fixtures;
 
 import com.teamfalcon.login.model.LoginRequestBodyDTO;
 import com.teamfalcon.login.model.UserEntity;
+import jakarta.xml.bind.DatatypeConverter;
+import lombok.SneakyThrows;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 
 public class UserEntityFixture {
+
+    @SneakyThrows
+    private static String hashPassword(String password) {
+        MessageDigest md = MessageDigest.getInstance("SHA-512");
+
+        byte [] hashBytes = md.digest(password.getBytes(StandardCharsets.UTF_8));
+
+        return DatatypeConverter.printHexBinary(hashBytes).toUpperCase();
+    }
 
     public static UserEntity makeValidUser() {
         return UserEntity.builder()
                 .id(25)
                 .username("johndoe@example.com")
-                .passwordHash("h7B3q9fX8eR2dP5s")
+                .passwordHash(hashPassword("valid"))
                 .failedLoginAttempts(0)
                 .deleted(Boolean.FALSE).build();
 
@@ -19,7 +33,7 @@ public class UserEntityFixture {
         return UserEntity.builder()
                 .id(25)
                 .username("johndoe@example.com")
-                .passwordHash("h7B3q9fX8eR2dP5s")
+                .passwordHash(hashPassword("invalid"))
                 .failedLoginAttempts(6)
                 .deleted(Boolean.FALSE).build();
     }
@@ -28,7 +42,7 @@ public class UserEntityFixture {
         return UserEntity.builder()
                 .id(25)
                 .username("johndoe@example.com")
-                .passwordHash("h7B3q9fX8eR2dP5s")
+                .passwordHash(hashPassword("valid"))
                 .failedLoginAttempts(0)
                 .deleted(Boolean.TRUE).build();
     }
@@ -37,7 +51,7 @@ public class UserEntityFixture {
         return LoginRequestBodyDTO
                 .builder()
                 .username("johndoe@example.com")
-                .passwordHash("h7B3q9fX8eR2dP5s")
+                .password("valid")
                 .build();
 
     }
@@ -46,7 +60,7 @@ public class UserEntityFixture {
         return LoginRequestBodyDTO
                 .builder()
                 .username("johndoe@example.com")
-                .passwordHash("123")
+                .password("invalid")
                 .build();
 
     }
@@ -55,7 +69,7 @@ public class UserEntityFixture {
         return LoginRequestBodyDTO
                 .builder()
                 .username("")
-                .passwordHash("123")
+                .password("invalid")
                 .build();
 
     }

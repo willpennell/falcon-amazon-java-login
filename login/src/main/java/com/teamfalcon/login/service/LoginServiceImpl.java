@@ -9,10 +9,14 @@ import com.teamfalcon.login.model.UserEntity;
 import com.teamfalcon.login.persistence.UserRepository;
 import com.teamfalcon.login.persistence.UserTokenRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.xml.bind.DatatypeConverter;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.LocalDateTime;
 
 import static com.teamfalcon.login.utils.ExpiryDateGeneration.generateExpiryDate;
@@ -68,12 +72,24 @@ public class LoginServiceImpl implements LoginService {
         if (userEntity.getFailedLoginAttempts() >= MAX_LOGIN_ATTEMPTS) {
             throw new FailedLoginLimitExceededException();
         }
-        if (!loginRequestBodyDTO.getPasswordHash().equals(userEntity.getPasswordHash())) {
+        if (!hashedPasswordMatches(loginRequestBodyDTO.getPassword(), userEntity.getPasswordHash())) {
             incrementFailedLoginAttempts(userEntity);
             throw new IncorrectPasswordException();
         }
 
     }
+
+    @SneakyThrows
+    private boolean hashedPasswordMatches(String loginRequestBodyDTOPassword, String userEntityHash) {
+        MessageDigest md = MessageDigest.getInstance("SHA-512");
+
+        byte [] hashBytes = md.digest(loginRequestBodyDTOPassword.getBytes(StandardCharsets.UTF_8));
+
+        String hashedPassword = DatatypeConverter.printHexBinary(hashBytes).toUpperCase();
+
+        return hashedPassword.equals(userEntityHash);
+    }
+
     private void incrementFailedLoginAttempts(UserEntity userEntity) {
         int currentAttempts = userEntity.getFailedLoginAttempts();
         userEntity.setFailedLoginAttempts(currentAttempts + INCREMENTAL_AMOUNT);
