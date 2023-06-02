@@ -11,11 +11,11 @@ import com.teamfalcon.login.persistence.UserTokenRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.xml.bind.DatatypeConverter;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.annotation.Validated;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -24,17 +24,20 @@ import java.time.LocalDateTime;
 import static com.teamfalcon.login.utils.ExpiryDateGeneration.generateExpiryDate;
 import static com.teamfalcon.login.utils.TokenGeneration.generateToken;
 
-@Validated
 @Service
 @AllArgsConstructor
+@NoArgsConstructor
 public class LoginServiceImpl implements LoginService {
 
-    private final UserTokenRepository userTokenRepository;
-    private final UserRepository userRepository;
+    @Autowired
+    private UserTokenRepository userTokenRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-    private static final int MAX_LOGIN_ATTEMPTS = 5;
-    private static final int INCREMENTAL_AMOUNT = 1;
-    private static final String USER_NOT_FOUND_MESSAGE = "Error 404 Not Found: No user found";
+    @Value("${login.maxAttempts}")
+    private int maxLoginAttempts;
+    private static final int incrementAmount = 1;
+    private static final String userNotFoundMessage = "Error 404 Not Found: No user found";
 
 
     @Override
@@ -42,7 +45,7 @@ public class LoginServiceImpl implements LoginService {
         validateLoginRequestUsername(loginRequestBodyDTO);
 
         UserEntity userEntity = userRepository.findByUsername(loginRequestBodyDTO.getUsername())
-                .orElseThrow(() -> new EntityNotFoundException(String.format(USER_NOT_FOUND_MESSAGE + " " +
+                .orElseThrow(() -> new EntityNotFoundException(String.format(userNotFoundMessage + " " +
                         UserEntity.class)));
 
 
@@ -61,7 +64,7 @@ public class LoginServiceImpl implements LoginService {
 
     private void validateLoginRequestUsername(LoginRequestBodyDTO loginRequestBodyDTO) {
         if (loginRequestBodyDTO.getUsername().isEmpty() || loginRequestBodyDTO.getUsername().isBlank()) {
-            throw new EntityNotFoundException(String.format(USER_NOT_FOUND_MESSAGE + "\n" +
+            throw new EntityNotFoundException(String.format(userNotFoundMessage + "\n" +
                     UserEntity.class));
         }
     }
@@ -69,10 +72,10 @@ public class LoginServiceImpl implements LoginService {
     public void validateUserEntity(LoginRequestBodyDTO loginRequestBodyDTO, UserEntity userEntity) {
 
         if (userEntity.getDeleted()) {
-            throw new EntityNotFoundException(String.format(USER_NOT_FOUND_MESSAGE + "\n" +
+            throw new EntityNotFoundException(String.format(userNotFoundMessage + "\n" +
                     UserEntity.class));
         }
-        if (userEntity.getFailedLoginAttempts() >= MAX_LOGIN_ATTEMPTS) {
+        if (userEntity.getFailedLoginAttempts() >= maxLoginAttempts) {
             throw new FailedLoginLimitExceededException();
         }
         if (!hashedPasswordMatches(loginRequestBodyDTO.getPassword(), userEntity.getPasswordHash())) {
@@ -95,7 +98,7 @@ public class LoginServiceImpl implements LoginService {
 
     private void incrementFailedLoginAttempts(UserEntity userEntity) {
         int currentAttempts = userEntity.getFailedLoginAttempts();
-        userEntity.setFailedLoginAttempts(currentAttempts + INCREMENTAL_AMOUNT);
+        userEntity.setFailedLoginAttempts(currentAttempts + incrementAmount);
         userRepository.save(userEntity);
     }
 

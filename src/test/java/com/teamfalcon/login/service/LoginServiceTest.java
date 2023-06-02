@@ -10,35 +10,23 @@ import com.teamfalcon.login.model.UserEntity;
 import com.teamfalcon.login.persistence.UserRepository;
 import com.teamfalcon.login.persistence.UserTokenRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-
-import static com.teamfalcon.login.fixtures.UserEntityFixture.makeDeletedUser;
-import static com.teamfalcon.login.fixtures.UserEntityFixture.makeInvalidPasswordLoginRequestBodyDTO;
-import static com.teamfalcon.login.fixtures.UserEntityFixture.makeInvalidUser;
-import static com.teamfalcon.login.fixtures.UserEntityFixture.makeInvalidUsernameLoginRequestBodyDTO;
-import static com.teamfalcon.login.fixtures.UserEntityFixture.makeValidLoginRequestBodyDTO;
-import static com.teamfalcon.login.fixtures.UserEntityFixture.makeValidUser;
+import static com.teamfalcon.login.fixtures.UserEntityFixture.*;
 import static com.teamfalcon.login.utils.ExpiryDateGeneration.generateExpiryDate;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -51,6 +39,14 @@ public class LoginServiceTest {
 
     @Mock
     private UserTokenRepository userTokenRepository;
+    
+    
+
+    @BeforeEach
+    void setup() {
+        ReflectionTestUtils.setField(loginService, "maxLoginAttempts", 5);
+    }
+
 
 
     @Test
