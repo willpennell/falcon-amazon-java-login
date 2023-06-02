@@ -88,9 +88,9 @@ public class LoginServiceImpl implements LoginService {
 
         byte [] hashBytes = md.digest(loginRequestBodyDTOPassword.getBytes(StandardCharsets.UTF_8));
 
-        String hashedPassword = DatatypeConverter.printHexBinary(hashBytes).toUpperCase();
+        String hashedPassword = DatatypeConverter.printHexBinary(hashBytes);
 
-        return hashedPassword.equals(userEntityHash);
+        return hashedPassword.equalsIgnoreCase(userEntityHash);
     }
 
     private void incrementFailedLoginAttempts(UserEntity userEntity) {
