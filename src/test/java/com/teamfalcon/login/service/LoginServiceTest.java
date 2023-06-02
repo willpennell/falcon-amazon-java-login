@@ -39,12 +39,12 @@ public class LoginServiceTest {
 
     @Mock
     private UserTokenRepository userTokenRepository;
-    
-    
 
     @BeforeEach
     void setup() {
         ReflectionTestUtils.setField(loginService, "maxLoginAttempts", 5);
+        ReflectionTestUtils.setField(loginService, "incrementAmount", 1);
+        ReflectionTestUtils.setField(loginService, "userNotFoundMessage", "Error 404 Not Found: No user found");
     }
 
 

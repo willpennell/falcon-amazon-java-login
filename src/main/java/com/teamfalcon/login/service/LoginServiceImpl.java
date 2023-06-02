@@ -36,8 +36,10 @@ public class LoginServiceImpl implements LoginService {
 
     @Value("${login.maxAttempts}")
     private int maxLoginAttempts;
-    private static final int incrementAmount = 1;
-    private static final String userNotFoundMessage = "Error 404 Not Found: No user found";
+    @Value("${login.incrementAmount}")
+    private int incrementAmount;
+    @Value("${login.userNotFoundMessage}")
+    private String userNotFoundMessage;
 
 
     @Override
